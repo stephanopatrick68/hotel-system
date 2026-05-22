@@ -161,12 +161,11 @@
   <script>
 
     // CONSULTAR DNI/RUC
-
+    const API_URL ="https://hotel-system-svfl.onrender.com";
+    //const API_URL ="http://localhost:3000";
 
     async function consultarDocumento() {
-      const API_URL =
-
-        "https://hotel-system-svfl.onrender.com";
+      
       const documento =
         document.getElementById("documento").value.trim();
       const numero = documento;
