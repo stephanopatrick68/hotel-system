@@ -135,11 +135,9 @@ router.post(
 
               __dirname,
 
-              "../generated",
-
-              "ticket.pdf"
+              "../generated"
             );
-            
+
             if (!fs.existsSync(pdfPath)) {
 
               fs.mkdirSync(pdfPath, {
