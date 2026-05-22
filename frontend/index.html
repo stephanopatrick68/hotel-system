@@ -162,8 +162,11 @@
 
     // CONSULTAR DNI/RUC
 
-    async function consultarDocumento() {
 
+    async function consultarDocumento() {
+      const API_URL =
+
+        "https://hotel-system.onrender.com";
       const documento =
         document.getElementById("documento").value;
 
@@ -252,7 +255,7 @@
         }
       } else {
         manualTipo.style.display = "none";
-        
+
         // restaurar readonly (si no hay modo manual activo)
         document.getElementById("nombre").readOnly = true;
         // mostrar / habilitar el botón de consultar
