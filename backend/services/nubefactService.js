@@ -27,7 +27,7 @@ const enviarComprobante = async (data) => {
     const numero =
 
       await obtenerSiguienteNumero(
-        serie
+        series
       );
       
     const payload = {
@@ -38,7 +38,7 @@ const enviarComprobante = async (data) => {
         data.documento.length === 11 ? "1" : "2",
 
       serie:
-        serie,
+        series,
 
       numero: numero,
 
