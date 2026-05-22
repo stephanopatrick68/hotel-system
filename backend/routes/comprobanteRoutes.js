@@ -57,21 +57,21 @@ router.post(
       await guardarReserva({
 
         ...req.body,
-      
+
         serie:
           respuestaNubefact.serie,
-      
+
         numero:
           respuestaNubefact.numero,
-      
+
         estadoSunat:
           respuestaNubefact.aceptada_por_sunat
             ? "ACEPTADO"
             : "PENDIENTE",
-      
+
         xmlURL:
           respuestaNubefact.enlace_del_xml,
-      
+
         pdfURL:
           respuestaNubefact.enlace_del_pdf
       });
@@ -139,6 +139,14 @@ router.post(
 
               "ticket.pdf"
             );
+            
+            if (!fs.existsSync(pdfPath)) {
+
+              fs.mkdirSync(pdfPath, {
+                recursive: true
+              });
+            }
+
             console.log("GENERANDO PDF...");
             await generarPDF(
               invoice,
