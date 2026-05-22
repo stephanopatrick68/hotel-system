@@ -166,10 +166,10 @@
     async function consultarDocumento() {
       const API_URL =
 
-        "https://hotel-system.onrender.com";
+        "https://hotel-system-svfl.onrender.com";
       const documento =
-        document.getElementById("documento").value;
-
+        document.getElementById("documento").value.trim();
+      const numero = documento;
       const manualOn =
         document.getElementById("manualSwitch").checked;
 
@@ -178,12 +178,8 @@
         const tipoManual =
           document.getElementById("manualTipo").value;
 
-        const numeroManual =
-          document.getElementById("manualNumero").value.trim();
-
-        const nombreManual =
-          document.getElementById("manualNombre").value.trim();
-
+        const numeroManual = document.getElementById("manualNumero")?.value?.trim() || documento;
+        const nombreManual = document.getElementById("manualNombre")?.value?.trim() || "";
         // setear campos visibles
         document.getElementById("documento").value =
           `${tipoManual}:${numeroManual || documento}`;
