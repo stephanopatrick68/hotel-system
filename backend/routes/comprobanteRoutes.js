@@ -131,19 +131,25 @@ router.post(
             console.log(result);
             // 5 GENERAR PDF
 
-            const pdfPath = path.join(
+            
 
+            const generatedDir = path.join(
               __dirname,
-
-              `../generated/ticket-${Date.now()}.pdf`
+              "../generated"
             );
-
-            if (!fs.existsSync(pdfPath)) {
-
-              fs.mkdirSync(pdfPath, {
-                recursive: true
+            
+            if(!fs.existsSync(generatedDir)){
+            
+              fs.mkdirSync(generatedDir,{
+                recursive:true
               });
             }
+            const pdfPath = path.join(
+
+              generatedDir,
+            
+              `ticket-${Date.now()}.pdf`
+            );
 
             console.log("GENERANDO PDF...");
             await generarPDF(
