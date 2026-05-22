@@ -135,7 +135,7 @@ router.post(
 
               __dirname,
 
-              "../generated"
+              `../generated/ticket-${Date.now()}.pdf`
             );
 
             if (!fs.existsSync(pdfPath)) {
