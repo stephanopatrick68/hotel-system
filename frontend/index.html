@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Registro Hostal</title>
+</head>
+
+<body>
+
+  <h1>Formulario Hostal</h1>
+
+  <!-- DOCUMENTO -->
+
+  <div>
+
+    <label>Documento</label><br>
+
+    <input type="text" id="documento" placeholder="DNI o RUC">
+
+    <button id="consultarBtn" onclick="consultarDocumento()">
+      Consultar
+    </button>
+
+    <!-- Toggle para ingreso manual -->
+    <div style="margin-top:8px;">
+      <label style="margin-right:8px;">
+        <input id="manualSwitch" type="checkbox" onchange="toggleManual()">
+        Pasaporte o Carnet de Extranjeria
+      </label>
+
+      <select id="manualTipo" onchange="onManualTipoChange()" style="display:none;">
+        <option value="A">Carnet de extranjería (CE)</option>
+        <option value="PAS">Pasaporte (PAS)</option>
+      </select>
+    </div>
+
+  </div>
+
+  <br>
+
+  <!-- NOMBRE -->
+
+  <div>
+
+    <label>Nombre</label><br>
+
+    <input type="text" id="nombre" readonly>
+
+  </div>
+
+  <br>
+
+  <!-- HABITACION -->
+
+  <div>
+
+    <label>Número Habitación</label><br>
+
+    <select id="habitacion" onchange="actualizarTipoHabitacion()">
+
+      <option value="">Seleccione</option>
+
+      <option value="101">101</option>
+      <option value="102">102</option>
+      <option value="201">201</option>
+      <option value="202">202</option>
+
+    </select>
+
+  </div>
+
+  <br>
+
+  <!-- TIPO HABITACION -->
+
+  <div>
+
+    <label>Tipo Habitación</label><br>
+
+    <input type="text" id="tipoHabitacion" readonly>
+
+  </div>
+
+  <br>
+
+  <!-- MODO -->
+
+  <div>
+
+    <label>Modo</label><br>
+
+    <select id="modo" onchange="actualizarModo()">
+
+      <option value="normal">Normal</option>
+      <option value="momentaneo">Momentáneo</option>
+
+    </select>
+
+  </div>
+
+  <br>
+
+  <!-- OPCIONES MOMENTANEO -->
+
+  <div id="momentaneoContainer" style="display:none;">
+
+    <label>Tiempo</label><br>
+
+    <select id="momentaneoTipo" onchange="actualizarMontoMomentaneo()">
+
+      <option value="1hora">1 Hora</option>
+      <option value="mas1hora">Más de 1 Hora</option>
+
+    </select>
+
+  </div>
+
+  <br>
+
+  <!-- FECHA INGRESO -->
+
+  <div>
+
+    <label>Fecha Ingreso</label><br>
+
+    <input type="datetime-local" id="fechaIngreso">
+
+  </div>
+
+  <br>
+
+  <!-- FECHA SALIDA -->
+
+  <div>
+
+    <label>Fecha Salida</label><br>
+
+    <input type="datetime-local" id="fechaSalida">
+
+  </div>
+
+  <br>
+
+  <!-- MONTO -->
+
+  <div>
+
+    <label>Monto</label><br>
+
+    <input type="number" id="monto">
+
+  </div>
+
+  <br>
+
+  <button onclick="obtenerComprobante()">
+    Obtener Comprobante
+  </button>
+
+  <script>
+
+    // CONSULTAR DNI/RUC
+
+    async function consultarDocumento() {
+
+      const documento =
+        document.getElementById("documento").value;
+
+      const manualOn =
+        document.getElementById("manualSwitch").checked;
+
+      if (manualOn) {
+        // tomar datos desde los campos manuales y no llamar a Factiliza
+        const tipoManual =
+          document.getElementById("manualTipo").value;
+
+        const numeroManual =
+          document.getElementById("manualNumero").value.trim();
+
+        const nombreManual =
+          document.getElementById("manualNombre").value.trim();
+
+        // setear campos visibles
+        document.getElementById("documento").value =
+          `${tipoManual}:${numeroManual || documento}`;
+
+        document.getElementById("nombre").value =
+          nombreManual;
+
+        // mantener nombre editable solo en modo manual
+        document.getElementById("nombre").readOnly = false;
+
+        console.log({
+          manual: true,
+          tipo: tipoManual,
+          numero: numeroManual,
+          nombre: nombreManual
+        });
+
+        return;
+      }
+
+      // modo normal: llamar al backend / factiliza
+      try {
+        const response = await fetch(
+          `http://localhost:3000/api/documento/${documento}`
+        );
+
+        console.log("HTTP status:", response.status);
+        const raw = await response.clone().text();
+        console.log("raw response text:", raw);
+
+        const data = await response.json();
+
+        console.log("parsed JSON:", data);
+
+        if (data.success) {
+          // backend devuelve campo 'nombre' (según tu servicio)
+          document.getElementById("nombre").value =
+            data.nombre || data.nombres || "";
+          // garantizar que nombre no sea editable en modo normal
+          document.getElementById("nombre").readOnly = true;
+        } else {
+          alert(data.message || "Documento no encontrado");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error consultando documento");
+      }
+    }
+
+    // Toggle para activar ingreso manual
+    function toggleManual() {
+      const checked =
+        document.getElementById("manualSwitch").checked;
+
+      const manualTipo =
+        document.getElementById("manualTipo");
+
+      const consultarBtn =
+        document.getElementById("consultarBtn");
+
+      if (checked) {
+        manualTipo.style.display = "inline-block";
+
+        // permitir editar nombre
+        document.getElementById("nombre").readOnly = false;
+        // ocultar o desactivar el botón de consultar en modo manual
+        if (consultarBtn) {
+          consultarBtn.style.display = "none";
+        }
+      } else {
+        manualTipo.style.display = "none";
+        
+        // restaurar readonly (si no hay modo manual activo)
+        document.getElementById("nombre").readOnly = true;
+        // mostrar / habilitar el botón de consultar
+        if (consultarBtn) {
+          consultarBtn.style.display = "inline-block";
+        }
+      }
+    }
+
+    function onManualTipoChange() {
+      const tipo = document.getElementById("manualTipo").value;
+      const documentoInput = document.getElementById("documento");
+
+      if (tipo === "A") {
+        documentoInput.placeholder = "Número de Carnet de Extranjería";
+      } else if (tipo === "PAS") {
+        documentoInput.placeholder = "Número de Pasaporte";
+      } else {
+        documentoInput.placeholder = "DNI o RUC";
+      }
+    }
+
+    // HABITACIONES
+
+    const habitaciones = {
+
+      "101": {
+        tipo: "Simple",
+        monto: 80
+      },
+
+      "102": {
+        tipo: "Matrimonial",
+        monto: 120
+      },
+
+      "201": {
+        tipo: "Suite",
+        monto: 180
+      },
+
+      "202": {
+        tipo: "Doble",
+        monto: 150
+      }
+    };
+
+    function formatearFechaLocal(fecha) {
+
+      const year = fecha.getFullYear();
+
+      const month = String(
+        fecha.getMonth() + 1
+      ).padStart(2, "0");
+
+      const day = String(
+        fecha.getDate()
+      ).padStart(2, "0");
+
+      const hours = String(
+        fecha.getHours()
+      ).padStart(2, "0");
+
+      const minutes = String(
+        fecha.getMinutes()
+      ).padStart(2, "0");
+
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
+    // ACTUALIZAR TIPO HABITACION
+
+    function actualizarTipoHabitacion() {
+
+      const numero =
+        document.getElementById("habitacion").value;
+
+      const habitacion =
+        habitaciones[numero];
+
+      if (habitacion) {
+
+        // TIPO
+
+        document.getElementById("tipoHabitacion").value =
+          habitacion.tipo;
+
+        // MONTO
+
+        document.getElementById("monto").value =
+          habitacion.monto;
+
+        // RESETEAR MODO
+
+        document.getElementById("modo").value =
+          "normal";
+
+        // OCULTAR MOMENTANEO
+
+        document.getElementById(
+          "momentaneoContainer"
+        ).style.display = "none";
+
+        // REINICIAR FECHAS
+
+        const now = new Date();
+
+        document.getElementById(
+          "fechaIngreso"
+        ).value = formatearFechaLocal(now);
+
+        const salida = new Date();
+
+        salida.setDate(
+          salida.getDate() + 1
+        );
+
+        salida.setHours(12);
+        salida.setMinutes(0);
+
+        document.getElementById(
+          "fechaSalida"
+        ).value = formatearFechaLocal(salida);
+
+        // si llegamos aquí, salir del modo manual (si estaba activo)
+        document.getElementById("manualSwitch").checked = false;
+        toggleManual();
+      }
+    }
+
+    // CAMBIAR MODO
+
+    function actualizarModo() {
+
+      const modo =
+        document.getElementById("modo").value;
+
+      const container =
+        document.getElementById("momentaneoContainer");
+
+      if (modo === "momentaneo") {
+
+        container.style.display = "block";
+
+        actualizarMontoMomentaneo();
+
+      } else {
+
+        container.style.display = "none";
+
+        actualizarTipoHabitacion();
+      }
+    }
+
+    // MONTOS MOMENTANEOS
+
+    function actualizarMontoMomentaneo() {
+
+      const tipo =
+        document.getElementById("momentaneoTipo").value;
+
+      const fechaIngresoValue =
+        document.getElementById("fechaIngreso").value;
+
+      if (!fechaIngresoValue) return;
+
+      const fechaIngreso =
+        new Date(fechaIngresoValue);
+
+      const fechaSalida =
+        new Date(fechaIngreso);
+
+      // 1 HORA
+
+      if (tipo === "1hora") {
+
+        document.getElementById("monto").value = 30;
+
+        fechaSalida.setHours(
+          fechaSalida.getHours() + 1
+        );
+      }
+
+      // MÁS DE 1 HORA
+
+      else {
+
+        document.getElementById("monto").value = 40;
+
+        fechaSalida.setHours(23);
+        fechaSalida.setMinutes(59);
+      }
+
+      const salidaISO =
+        formatearFechaLocal(fechaSalida);
+
+      document.getElementById("fechaSalida").value =
+        salidaISO;
+    }
+
+    // FECHA SALIDA DEFAULT 12PM
+
+    window.onload = () => {
+
+      const now = new Date();
+
+      const ingreso =
+        formatearFechaLocal(now);
+
+      document.getElementById("fechaIngreso").value =
+        ingreso;
+
+      const salida = new Date();
+
+      salida.setDate(salida.getDate() + 1);
+
+      salida.setHours(12);
+      salida.setMinutes(0);
+
+      const salidaISO =
+        formatearFechaLocal(salida);
+
+      document.getElementById("fechaSalida").value =
+        salidaISO;
+    };
+
+    // OBTENER COMPROBANTE
+
+    async function obtenerComprobante() {
+
+      const payload = {
+
+        documento:
+          document.getElementById("documento").value,
+
+        nombre:
+          document.getElementById("nombre").value,
+
+        habitacion:
+          document.getElementById("habitacion").value,
+
+        tipoHabitacion:
+          document.getElementById("tipoHabitacion").value,
+
+        modo:
+          document.getElementById("modo").value,
+
+        fechaIngreso:
+          document.getElementById("fechaIngreso").value,
+
+        fechaSalida:
+          document.getElementById("fechaSalida").value,
+
+        monto:
+          document.getElementById("monto").value
+      };
+
+      try {
+
+        const response = await fetch(
+
+          "http://localhost:3000/api/generar-comprobante",
+
+          {
+
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(payload)
+          }
+        );
+
+        if (!response.ok) {
+
+          throw new Error(
+            "Error generando comprobante"
+          );
+        }
+
+        const blob = await response.blob();
+
+        const url =
+          window.URL.createObjectURL(blob);
+
+        const a =
+          document.createElement("a");
+
+        a.href = url;
+
+        a.download = "comprobante.pdf";
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        a.remove();
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "Error generando comprobante"
+        );
+      }
+    }
+
+  </script>
+
+</body>
+
+</html>
