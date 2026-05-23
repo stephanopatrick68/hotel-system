@@ -14,6 +14,12 @@ const {
   =
   require("../services/serieService");
 
+const {
+  obtenerFechaPeru
+}
+  =
+  require("../utils/datePeru");
+
 const enviarComprobante = async (data) => {
 
   try {
@@ -29,7 +35,7 @@ const enviarComprobante = async (data) => {
       await obtenerSiguienteNumero(
         serie
       );
-      
+
     const payload = {
 
       operacion: "generar_comprobante",
@@ -56,7 +62,7 @@ const enviarComprobante = async (data) => {
       cliente_direccion: "HUANCAYO",
 
       fecha_de_emision:
-        new Date().toISOString().split("T")[0],
+        obtenerFechaPeru(),
 
       moneda: "1",
 
